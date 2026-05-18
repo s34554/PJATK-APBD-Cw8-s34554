@@ -8,7 +8,7 @@ namespace WebApplication1.Services;
 
 public class PatientService(HospitalContext context) : IPatientService
 {
-    public async Task<List<PatientDto>> GetPatientsAsync(string? search)
+    public async Task<List<PatientDto>> GetPatientsAsync(string? search, CancellationToken cancellationToken)
     {
         var query = context.Patients.AsNoTracking().AsQueryable();
 
@@ -58,23 +58,23 @@ public class PatientService(HospitalContext context) : IPatientService
                     )
                 ))
             ).ToList()
-        )).ToListAsync();
+        )).ToListAsync(cancellationToken);
     }
 
-    public async Task<int> AssignBedAsync(string pesel, CreateBedAssignmentDto dto)
+    public async Task<int> AssignBedAsync(string pesel, CreateBedAssignmentDto dto, CancellationToken cancellationToken)
     {
-        var patientExists = await context.Patients.AnyAsync(p => p.Pesel == pesel);
+        var patientExists = await context.Patients.AnyAsync(p => p.Pesel == pesel, cancellationToken: cancellationToken);
         if (!patientExists) throw new NotFoundException($"Patient with PESEL {pesel} not found.");
-        var ward = await context.Wards.FirstOrDefaultAsync(w => w.Name == dto.Ward);
+        var ward = await context.Wards.FirstOrDefaultAsync(w => w.Name == dto.Ward, cancellationToken: cancellationToken);
         if (ward is null) throw new NotFoundException($"Ward '{dto.Ward}' not found.");
-        var bedType = await context.BedTypes.FirstOrDefaultAsync(bt => bt.Name == dto.BedType);
+        var bedType = await context.BedTypes.FirstOrDefaultAsync(bt => bt.Name == dto.BedType, cancellationToken: cancellationToken);
         if (bedType is null) throw new NotFoundException($"Bed type '{dto.BedType}' not found.");
         var availableBed = await context.Beds
             .Where(b => b.BedTypeId == bedType.Id && b.Room.WardId == ward.Id)
             .Where(b => !b.BedAssignments.Any(ba =>
                 ba.From < (dto.To ?? DateTime.MaxValue)
                 && (ba.To == null || ba.To > dto.From)))
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
         if (availableBed is null)
             throw new NotFoundException(
                 "No available bed of the specified type in the specified ward for the requested time range.");
@@ -86,7 +86,7 @@ public class PatientService(HospitalContext context) : IPatientService
             To = dto.To
         };
         context.BedAssignments.Add(assignment);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
 
         return assignment.Id;
     }

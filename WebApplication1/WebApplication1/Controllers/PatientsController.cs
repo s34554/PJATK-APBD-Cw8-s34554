@@ -11,15 +11,15 @@ namespace WebApplication1.Controllers;
 public class PatientsController(IPatientService service): ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetPatients([FromQuery] string? search)
+    public async Task<IActionResult> GetPatients([FromQuery] string? search, CancellationToken cancellationToken)
     {
-        var patients = await service.GetPatientsAsync(search);
+        var patients = await service.GetPatientsAsync(search, cancellationToken);
         return Ok(patients);
     }
     [HttpPost("{pesel}/bedassignments")]
-    public async Task<IActionResult> AssignBed(string pesel, [FromBody] CreateBedAssignmentDto dto)
+    public async Task<IActionResult> AssignBed(string pesel, [FromBody] CreateBedAssignmentDto dto, CancellationToken cancellationToken)
     {
-        var id = await service.AssignBedAsync(pesel, dto);
+        var id = await service.AssignBedAsync(pesel, dto, cancellationToken);
         return Created($"/api/patients/{pesel}/bedassignments/{id}", new { id });
     }
 }
