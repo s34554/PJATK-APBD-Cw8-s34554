@@ -63,8 +63,8 @@ public class PatientService(HospitalContext context) : IPatientService
 
     public async Task<int> AssignBedAsync(string pesel, CreateBedAssignmentDto dto)
     {
-        var patient = await context.Patients.FirstOrDefaultAsync(p => p.Pesel == pesel);
-        if (patient is null) throw new NotFoundException($"Patient with PESEL {pesel} not found.");
+        var patientExists = await context.Patients.AnyAsync(p => p.Pesel == pesel);
+        if (!patientExists) throw new NotFoundException($"Patient with PESEL {pesel} not found.");
         var ward = await context.Wards.FirstOrDefaultAsync(w => w.Name == dto.Ward);
         if (ward is null) throw new NotFoundException($"Ward '{dto.Ward}' not found.");
         var bedType = await context.BedTypes.FirstOrDefaultAsync(bt => bt.Name == dto.BedType);
