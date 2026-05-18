@@ -19,14 +19,7 @@ public class PatientsController(IPatientService service): ControllerBase
     [HttpPost("{pesel}/bedassignments")]
     public async Task<IActionResult> AssignBed(string pesel, [FromBody] CreateBedAssignmentDto dto)
     {
-        try
-        {
-            var id = await service.AssignBedAsync(pesel, dto);
-            return Created($"/api/patients/{pesel}/bedassignments/{id}", new { id });
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(ex.Message);
-        }
+        var id = await service.AssignBedAsync(pesel, dto);
+        return Created($"/api/patients/{pesel}/bedassignments/{id}", new { id });
     }
 }

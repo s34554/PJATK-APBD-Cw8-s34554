@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using WebApplication1.Data;
+using WebApplication1.Exceptions;
 using WebApplication1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<HospitalContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -19,7 +23,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
+
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
