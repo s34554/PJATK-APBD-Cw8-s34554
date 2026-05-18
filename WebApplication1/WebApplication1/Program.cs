@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
+using WebApplication1.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<HospitalContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddScoped<IPatientService, PatientService>();
 
 var app = builder.Build();
 
